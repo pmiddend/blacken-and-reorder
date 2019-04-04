@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+
+curl -XPOST "http://localhost:9001$(pwd)" --data-binary @- > /tmp/reordered
+
+curl --silent -XPOST http://localhost:31338 --data-binary @- </tmp/reordered > /tmp/blackened
+
+if [ -s /tmp/blackened ]; then
+    cat /tmp/blackened
+else
+    cat /tmp/reordered
+fi
