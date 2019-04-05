@@ -2,7 +2,9 @@
 
 curl --silent -XPOST "http://localhost:31338$(pwd)" --data-binary @- > /tmp/reordered
 
-curl --silent -XPOST http://localhost:31337 --data-binary @- </tmp/reordered > /tmp/blackened
+if ! curl --fail --silent -XPOST http://localhost:31337 --data-binary @- </tmp/reordered > /tmp/blackened; then
+   cat /tmp/reordered
+fi
 
 if [ -s /tmp/blackened ]; then
     cat /tmp/blackened
