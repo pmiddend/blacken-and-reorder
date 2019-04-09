@@ -1,13 +1,19 @@
 #!/usr/bin/env sh
 
-curl --silent -XPOST "http://localhost:31338$(pwd)" --data-binary @- > /tmp/reordered
+temp_dir="$(mktemp -d)"
+trap 'rm -rf -- "$temp_dir"' INT TERM HUP EXIT
+reordered_file="${temp_dir}/reordered"
+blackened_file="${temp_dir}/blackened"
 
-if ! curl --fail --silent -XPOST http://localhost:31337 --data-binary @- </tmp/reordered > /tmp/blackened; then
-   cat /tmp/reordered
-fi
+curl --silent -XPOST "http://localhost:31338$(pwd)" --data-binary @- > "$reordered_file"
 
-if [ -s /tmp/blackened ]; then
-    cat /tmp/blackened
+if ! curl --fail --silent -XPOST http://localhost:31337 --data-binary @- <"$reordered_file" > "$blackened_file"; then
+   cat "$reordered_file"
 else
-    cat /tmp/reordered
+   if [ -s "$blackened_file" ]; then
+       cat "$blackened_file"
+   else
+       cat "$reordered_file"
+   fi
 fi
+
