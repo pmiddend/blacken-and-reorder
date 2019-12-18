@@ -5,9 +5,11 @@ trap 'rm -rf -- "$temp_dir"' INT TERM HUP EXIT
 reordered_file="${temp_dir}/reordered"
 blackened_file="${temp_dir}/blackened"
 
-curl --silent -XPOST "http://localhost:31338$(pwd)" --data-binary @- > "$reordered_file"
+# Without the Expect, curl waits for 100, which complicates things.
+# See https://gms.tf/when-curl-sends-100-continue.html
+curl --header "Expect:" --silent -XPOST "http://localhost:31338$(pwd)" --data-binary @- > "$reordered_file"
 
-if ! curl --fail --silent -XPOST http://localhost:31337 --data-binary @- <"$reordered_file" > "$blackened_file"; then
+if ! curl --header "Expect:" --fail --silent -XPOST http://localhost:31337 --data-binary @- <"$reordered_file" > "$blackened_file"; then
    cat "$reordered_file"
 else
    if [ -s "$blackened_file" ]; then
